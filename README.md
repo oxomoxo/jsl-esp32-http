@@ -38,12 +38,17 @@ void static_target(const jsl_http_common::req_t& _req, jsl_http_common::res_t& _
 void app_main()
 {
 	jsl_http::addRoute("GET","/{file}",static_target);
-	jsl_http::addRoute("GET","/base/{file}",static_target);
+	jsl_http::addRoute("GET","/res/{file}",static_target);
 	jsl_http::addRoute("GET","/ok/this/is/a/long/{address:\\d+(?:\.\d*)?}/with/some/regexes/{along:\\d+}",test_target);
 
 	jsl_http::start();
 }
 ```
+
+The above code snippet
+- declares a callback for serving hypothetical static files
+- declares two possible routes for static content 
+- declare a parametric route with regexes
 
 ### How it works
 
@@ -54,6 +59,8 @@ The router works as follows:
     - plain segments: if the incoming segment matches a child name search the branch for a matching leaf, if no leaf is returned test regexes
     - regex segments: if the incoming segment matches a regex search the branch for a matching leaf, if no leaf is returned possibly return the leaf (the actual callback)
     - leaf
+    
+The regexes have a simple sytax : `{argname:regex}` where the match from the regex (Ecmascript idiom) will be stored in argname.
 
 ### Install
 
