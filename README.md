@@ -1,37 +1,89 @@
-## Welcome to GitHub Pages
 
-You can use the [editor on GitHub](https://github.com/oxomoxo/jsl-esp32-http/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+# jsl-esp32-http
+## A lean C++ http server and app router. Handcrafted for esp32. 
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The server is based on LWIP and has very small codebase (< 1K loc).
 
-### Markdown
+Yet it has a very nice app router that can gather arguments along the url according to possible regexes in the route definition.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Use
 
-```markdown
-Syntax highlighted code block
+```cpp
+void static_target(const jsl_http_common::req_t& _req, jsl_http_common::res_t& _res)
+{
+	ESP_LOGI(LOGTAG, "static_target called.");
+	std::ostringstream& out = _res;
 
-# Header 1
-## Header 2
-### Header 3
+	std::string fname = "/static";
+	if(_req.path().size() > 1)
+	{
+		fname += "/res";
+	}
+	fname += "/" + _req.args().at("file");
 
-- Bulleted
-- List
+	ESP_LOGI(LOGTAG, "Opening file : %s",fname.c_str());
 
-1. Numbered
-2. List
+	if(!load_file(fname.c_str(),out))
+	{
+		out << jsl_http_common::dump_path("Path",_req.path());
+		out << jsl_http_common::dump_pmap("Args",_req.args());
+		out << jsl_http_common::dump_pmap("Query",_req.query());
+		_res.write_file("text/plain");
+		return;
+	}
 
-**Bold** and _Italic_ and `Code` text
+	_res.write_file(jsl_http_common::mime.at(fname.substr(fname.find('.'))).c_str());
+}
 
-[Link](url) and ![Image](src)
+void app_main()
+{
+	jsl_http::addRoute("GET","/{file}",static_target);
+	jsl_http::addRoute("GET","/base/{file}",static_target);
+	jsl_http::addRoute("GET","/ok/this/is/a/long/{address:\\d+(?:\.\d*)?}/with/some/regexes/{along:\\d+}",test_target);
+
+	jsl_http::start();
+}
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### How it works
 
-### Jekyll Themes
+The router works as follows:
+- When a route is declared, the router splits the path segments and arranges a tree of routes branches according to plain or regex segments, and stores the callback as the leaf.
+- When the server receives a request it splits the url segments, the query arguments and handles the data to the router.
+- When the router processes the material form the server it walks the routes branches recursively matching from "most defined" to "least defined" (a matching plain segment is more defined than a matching regex, a longer match is more defined than a shorter match)
+    - plain segments (if the incoming segment matches a child name search the branch for a matching leaf)
+    if no leaf is returned test regexes
+    - regex segments (if the incoming segment matches a regex search the branch for a matching leaf)
+    if no leaf is returned possibly return the lef (callback)
+    - leaf
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/oxomoxo/jsl-esp32-http/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+### Install
 
-### Support or Contact
+```bash
+git clone https://github.com/oxomoxo/jsl-esp32-http.git server
+```
+Or
+```bash
+git submodule add https://github.com/oxomoxo/jsl-esp32-http.git server
+```
+In component.mk add the folder to the `COMPONENT_ADD_INCLUDEDIRS` and `COMPONENT_SRCDIRS`
 
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+```mk
+COMPONENT_ADD_INCLUDEDIRS := . \
+	...
+	server \
+
+COMPONENT_SRCDIRS := . \
+	...
+	server \
+```
+
+Build :
+
+```bash
+make -j4 flash monitor
+```
+
+And, Voila !
+
+Neat isn't it ?
