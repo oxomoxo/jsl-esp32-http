@@ -59,7 +59,7 @@ The router works as follows:
 - When the router processes the material form the server it walks the routes branches recursively matching from "most defined" to "least defined" (a matching plain segment is more defined than a matching regex, a longer match is more defined than a shorter match)
     - plain segments: if the incoming segment matches a child name search the branch for a matching leaf, if no leaf is returned test regexes
     - regex segments: if the incoming segment matches a regex search the branch for a matching leaf, if no leaf is returned possibly return the leaf (the actual callback)
-    - leaf
+    - branch leaf (if present)
     
 The regexes (Ecmascript) have a simple integration syntax : `{argname:regex}` where the match from the regex will be stored in argname.
 
