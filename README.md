@@ -60,7 +60,7 @@ The router works as follows:
     - regex segments: if the incoming segment matches a regex search the branch for a matching leaf, if no leaf is returned possibly return the leaf (the actual callback)
     - leaf
     
-The regexes have a simple sytax : `{argname:regex}` where the match from the regex (Ecmascript idiom) will be stored in argname.
+The regexes (Ecmascript) have a simple integration syntax : `{argname:regex}` where the match from the regex will be stored in argname.
 
 ### Install
 
