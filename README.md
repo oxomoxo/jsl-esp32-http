@@ -39,7 +39,7 @@ void app_main()
 {
 	jsl_http::addRoute("GET","/{file}",static_target);
 	jsl_http::addRoute("GET","/res/{file}",static_target);
-	jsl_http::addRoute("GET","/ok/this/is/a/long/{address:\\d+(?:\.\d*)?}/with/some/regexes/{along:\\d+}",test_target);
+	jsl_http::addRoute("GET","/ok/this/is/a/long/{address:\\d+(?:\\.\\d*)?}/with/some/regexes/{along:\\d+}",test_target);
 
 	jsl_http::start();
 }
