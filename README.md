@@ -51,10 +51,8 @@ The router works as follows:
 - When a route is declared, the router splits the path segments and arranges a tree of routes branches according to plain or regex segments, and stores the callback as the leaf.
 - When the server receives a request it splits the url segments, the query arguments and handles the data to the router.
 - When the router processes the material form the server it walks the routes branches recursively matching from "most defined" to "least defined" (a matching plain segment is more defined than a matching regex, a longer match is more defined than a shorter match)
-    - plain segments (if the incoming segment matches a child name search the branch for a matching leaf)
-    if no leaf is returned test regexes
-    - regex segments (if the incoming segment matches a regex search the branch for a matching leaf)
-    if no leaf is returned possibly return the lef (callback)
+    - plain segments: if the incoming segment matches a child name search the branch for a matching leaf, if no leaf is returned test regexes
+    - regex segments: if the incoming segment matches a regex search the branch for a matching leaf, if no leaf is returned possibly return the leaf (the actual callback)
     - leaf
 
 ### Install
