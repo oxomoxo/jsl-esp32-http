@@ -2,7 +2,9 @@
 # jsl-esp32-http
 ## A lean C++ http server and app router. Handcrafted for esp32. 
 
-The server is based on LWIP and has very small codebase (< 1K loc).
+### What is it
+
+The http server is based on LWIP IP stack and has very small codebase (< 1K loc).
 
 Yet it has a very nice app router that can gather arguments along the url according to possible regexes in the route definition.
 
