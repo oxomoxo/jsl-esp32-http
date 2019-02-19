@@ -1,3 +1,27 @@
+/*
+	jsl-http.cpp
+
+	This scource file is part of the jsl-esp32 project.
+
+	Author: Lorenzo Pastrana
+	Copyright © 2019 Lorenzo Pastrana
+
+	This program is free software: you can redistribute it and/or modify it
+	under the terms of the GNU General Public License as published by the
+	Free Software Foundation, either version 3 of the License, or (at your
+	option) any later version.
+
+	This program is distributed in the hope that it will be useful, but
+	WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+	for more details.
+
+	You should have received a copy of the GNU General Public License along
+	with this program. If not, see http://www.gnu.org/licenses/.
+
+*/
+
+
 
 #include <esp_wifi.h>
 #include <esp_log.h>
@@ -22,7 +46,7 @@ void jsl_http::run(void* _ctx)
 {
 	ESP_LOGI(SERVER_LOGTAG, "Server Task Executing on core %d\n", xPortGetCoreID());
 
-	// This one is necessary if wifi is in station mode 
+	// This one is necessary if wifi is in station mode
 	if(s_event_group != NULL)
 	{
 		xEventGroupWaitBits(s_event_group, 0x01, pdFALSE, pdTRUE, portMAX_DELAY );
@@ -175,7 +199,7 @@ err_t jsl_http::req::parse()
 		}
 	}
 
-	return ERR_OK; 
+	return ERR_OK;
 }
 
 
