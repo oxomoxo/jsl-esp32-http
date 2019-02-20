@@ -23,6 +23,8 @@
 
 
 
+#include <iomanip>
+
 #include <esp_wifi.h>
 #include <esp_log.h>
 
@@ -161,11 +163,38 @@ err_t jsl_http::req::parse()
 
 	// Parse URI and headers
 
+	parse_head(stream);
+
+	// Parse request body
+
+	parse_body(stream);
+
+	// Parse path
+
+	size_t p1 = 0, p2 = 0;
+
+	p1 = m_uri.find('?');
+	p2 = m_uri.find('#');
+
+	jsl_router::splitPath(m_uri.substr(0,p1),m_path);
+
+	// Parse query string
+
+	stream.clear();
+	stream.str(m_uri.substr(p1 + 1,p2 - p1));
+
+	parse_nval(m_query,stream,'&');
+
+	return ERR_OK;
+}
+
+void jsl_http::req::parse_head(std::stringstream& _stream)
+{
 	std::string line;
 	size_t p1 = 0, p2 = 0;
-	while(std::getline(stream, line, '\n'))
+	while(std::getline(_stream, line, '\n'))
 	{
-		if(m_uri == "") // first line => METHOD + URI
+		if(m_uri == "") // first line => METHOD + URI + HTTP/?
 		{
 			p1 = line.find(' ');
 			p2 = line.rfind(' ');
@@ -173,36 +202,218 @@ err_t jsl_http::req::parse()
 			m_method = line.substr(0,p1);
 			m_uri = line.substr(p1 + 1,p2 - (p1 + 1));
 		}
+		else if(line.size() == 0) // body start
+		{
+			break;
+		}
 		else // headers
 		{
 			p1 = line.find(':');
 			if(p1 != std::string::npos)
 			{
-				m_headers[line.substr(0,p1)] = line.substr(p1 + 2,line.size() - (p1 + 3));
+				m_headers[line.substr(0,p1)] = line.substr(p1 + 2/*skip colon & space*/,line.size() - (p1 + 3));
 			}
 		}
 	}
+}
 
-	p1 = m_uri.find('?');
-	p2 = m_uri.find('#');
+void jsl_http::req::parse_body(std::stringstream& _stream)
+{
+	size_t p1 = 0;
+	std::string ctype = header("Content-Type");
+	if(ctype == "application/x-www-form-urlencoded")
+	{
+		// Parse url encoded request body
+		parse_nval(m_form,_stream,'&');
+	}
+	else
+	{
+		std::string boundary;
+		p1 = ctype.find(';');
+		if(p1 != std::string::npos)
+		{
+			boundary = ctype.substr(p1 + 1);
+			ctype = ctype.substr(0,p1);
 
-	jsl_router::splitPath(m_uri.substr(0,p1),m_path);
+			while(boundary[0] == ' ') boundary.substr(1);
+			if(boundary[0] == '"') boundary.substr(1,boundary.size()-2);
 
-	stream.clear();
-	stream.str(m_uri.substr(p1 + 1,p2 - p1));
-	while(std::getline(stream, line, '&'))
+			// "multipart/mixed" ??
+			if(ctype == "multipart/form-data")
+			{
+				parse_mpart(_stream,boundary);
+			}
+		}
+	}
+}
+
+void jsl_http::req::parse_nval(pmap_t& _map, std::stringstream& _stream, char _split)
+{
+	size_t p1 = 0;
+	std::string line;
+	while(std::getline(_stream, line, _split))
 	{
 		p1 = line.find('=');
 		if(p1 != std::string::npos)
 		{
-			m_query[line.substr(0,p1)] = line.substr(p1 + 1,line.size() - (p1 + 1));
+			_map[line.substr(0,p1)] = url_decode(line.substr(p1 + 1,line.size() - (p1 + 1)));
+		}
+	}
+}
+
+void jsl_http::req::parse_mpart(std::stringstream& _stream, const std::string& _boundary)
+{
+	size_t p1 = 0;
+	pmap_t headers;
+	std::string line;
+	std::string header;
+	while(std::getline(_stream, line, '\n'))
+	{
+		if(line.size() == 0) // body start
+		{
+			break;
+		}
+		p1 = line.find(':');
+		if(p1 != std::string::npos)
+		{
+			header = line.substr(p1 + 2/*skip colon & space*/,line.size() - (p1 + 3));
+			headers[line.substr(0,p1)] = header;
+		}
+	}
+/*
+MIME-Version: 1.0
+Content-Type: multipart/form-data; boundary=frontier
+
+--frontier
+Content-Disposition: form-data; name="field1"
+
+value1
+--frontier
+Content-Disposition: form-data; name="field2"; filename="example.txt"
+
+value2
+--frontier--
+*/
+}
+
+std::string jsl_http::req::url_encode(const std::string& _src)
+{
+	std::ostringstream ret;
+
+	auto i = _src.begin();
+	auto e = _src.end();
+	while(i != e)
+	{
+		auto c = *i++;
+
+        if ((c >= '0' && c <= '9') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= 'A' && c <= 'Z') ||
+            c == '-' || c == '_' || c == '.' || c == '!' || c == '~' ||
+            c == '*' || c == '\'' || c == '(' || c == ')')
+        {
+			ret << c;
+		}
+        else if (c == ' ')
+        {
+            ret << '+';
+        }
+		else
+		{
+			// Any other characters are percent-encoded
+			ret << std::uppercase;
+			ret << '%' << std::setw(2) << (int)((unsigned char) c);
+			ret << std::nouppercase;
+		}
+	}
+	return ret.str();
+}
+
+std::string jsl_http::req::url_decode(const std::string& _src)
+{
+	std::string ret;
+	ret.reserve(_src.size());
+
+	auto i = _src.begin();
+	auto e = _src.end();
+	while(i != e)
+	{
+		if(*i == '%')
+		{
+			std::string hex(i+1,i+2);
+			std::string::value_type ch = std::strtol(hex.c_str(),NULL,16);
+			ret.push_back(ch);
+			i += 3;
+		}
+		else if(*i == '+')
+		{
+			ret.push_back(' ');
+			++i;
+		}
+		else
+		{
+			ret.push_back(*i);
+			++i;
+		}
+	}
+	return ret;
+}
+
+std::string jsl_http::req::b64_encode(const std::string& _src)
+{
+	std::string ret;
+
+	constexpr const char* tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+	int val=0, valb=-6;
+	for(auto c : _src)
+	{
+		val = (val << 8) + c;
+		valb += 8;
+		while(valb >= 0)
+		{
+			ret.push_back(tbl[(val >> valb) & 0x3F]);
+			valb -= 6;
 		}
 	}
 
-	return ERR_OK;
+	if (valb > -6)
+	{
+		ret.push_back(tbl[((val << 8) >> (valb + 8)) & 0x3F]);
+	}
+
+	while(ret.size() % 4) ret.push_back('=');
+
+	return ret;
 }
 
+std::string jsl_http::req::b64_decode(const std::string& _src)
+{
+	std::string ret;
 
+	constexpr const char* tbl = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+	std::vector<int> T(256,-1);
+
+	for (int i = 0; i < 64; ++i) T[tbl[i]] = i;
+
+	int val = 0, valb = -8;
+	for(auto c : _src)
+	{
+		if (T[c] == -1) break;
+
+		val = (val << 6) + T[c];
+		valb += 6;
+
+		if (valb >= 0)
+		{
+			ret.push_back(char((val >> valb) & 0xFF));
+			valb-=8;
+		}
+	}
+
+	return ret;
+}
 
 std::string jsl_http::res::headers()
 {

@@ -67,6 +67,18 @@ protected:
 	protected:
 
 		err_t parse();
+
+		void parse_head(std::stringstream& _stream);
+		void parse_body(std::stringstream& _stream);
+		void parse_nval(pmap_t& _map, std::stringstream& _stream, char _split);
+		void parse_mpart(std::stringstream& _stream, const std::string& _boundary);
+
+		static std::string url_decode(const std::string& _src);
+		static std::string url_encode(const std::string& _src);
+
+		static std::string b64_decode(const std::string& _src);
+		static std::string b64_encode(const std::string& _src);
+
 		netconn* m_con;
 	};
 

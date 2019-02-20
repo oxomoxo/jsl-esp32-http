@@ -41,7 +41,7 @@ void jsl_router::addRoute(const char* _method, const char* _pattern, target_t _t
 	}
 
 	path_t path;
-	jsl_router::splitPath(_pattern,path);
+	jsl_router::splitPath(path,_pattern);
 
 	ESP_LOGI(ROUTER_LOGTAG,"Adding route : [%s] => %s",method.c_str(),_pattern);
 	m_routes[method].settle(_target,path);
@@ -67,7 +67,7 @@ jsl_router::target_t jsl_router::dispatch(const std::string& _method, const path
 	return NULL;
 }
 
-void jsl_router::splitPath(const std::string& _pattern, path_t& _path)
+void jsl_router::splitPath(path_t& _path, const std::string& _pattern)
 {
 	std::string line;
 	std::stringstream stream(_pattern);

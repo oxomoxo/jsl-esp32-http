@@ -161,6 +161,7 @@ public:
 		const path_t& path() const { return m_path; }
 		const pmap_t& args() const { return m_args; }
 		const pmap_t& query() const { return m_query; }
+		const pmap_t& form() const { return m_form; }
 		const pmap_t& headers() const { return m_headers; }
 		std::string header(const char* _header) const
 		{
@@ -179,6 +180,7 @@ public:
 		path_t m_path;
 		pmap_t m_args;
 		pmap_t m_query;
+		pmap_t m_form;
 		pmap_t m_headers;
 
 	} req_t;
