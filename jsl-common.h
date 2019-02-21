@@ -41,14 +41,16 @@ typedef uint32_t  u32_t;
 typedef int32_t   s32_t;
 #endif
 
+#include "utils/jsl-str.h"
+
 class jsl_http_common
 {
 public:
 
-	typedef std::vector<std::string> path_t;
+	typedef jsl_str::svect_t path_t;
 	typedef std::map<std::string,std::string> pmap_t;
 
-	static std::string dump_path(const char* _name, const jsl_http_common::path_t& _vec)
+	static std::string dump_path(const char* _name, const path_t& _vec)
 	{
 		std::stringstream out;
 		out << _name << " : " << std::endl;
@@ -61,7 +63,7 @@ public:
 		return out.str();
 	}
 
-	static std::string dump_pmap(const char* _name, const jsl_http_common::pmap_t& _map)
+	static std::string dump_pmap(const char* _name, const pmap_t& _map)
 	{
 		std::stringstream out;
 		out << _name << " : " << std::endl;
@@ -221,7 +223,7 @@ public:
 		void write_file(const char* _type)
 		{
 			m_headers["Content-type"] = _type;
-			write(jsl_http_common::STATUS_OK);
+			write(STATUS_OK);
 		}
 
 		void write_gzip(const char* _type)
@@ -229,7 +231,7 @@ public:
 			m_headers["Content-type"] = _type;
 			m_headers["Accept-Ranges"] = "bytes";
 			m_headers["Content-Encoding"] = "gzip";
-			write(jsl_http_common::STATUS_OK);
+			write(STATUS_OK);
 		}
 
 		void write_json()
@@ -237,14 +239,14 @@ public:
 			m_headers["Content-type"] = "application/json";
 			m_headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
 			m_headers["Pragma"] = "no-cache";
-			write(jsl_http_common::STATUS_OK);
+			write(STATUS_OK);
 		}
 
 		void write_cached(const char* _type)
 		{
 			m_headers["Content-type"] = _type;
 			m_headers["Cache-Control"] = "public, max-age=31536000";
-			write(jsl_http_common::STATUS_OK);
+			write(STATUS_OK);
 		}
 
 		virtual void write(status_t _status) = 0;

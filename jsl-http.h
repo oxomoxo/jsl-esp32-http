@@ -44,6 +44,7 @@ public:
 
 	using req_t = jsl_http_common::req_t;
 	using res_t = jsl_http_common::res_t;
+	using path_t = jsl_http_common::path_t;
 	using pmap_t = jsl_http_common::pmap_t;
 	using target_t = jsl_http_common::target_t;
 	using status_t = jsl_http_common::status_t;
@@ -70,14 +71,8 @@ protected:
 
 		void parse_head(std::stringstream& _stream);
 		void parse_body(std::stringstream& _stream);
-		void parse_nval(pmap_t& _map, std::stringstream& _stream, char _split);
-		void parse_mpart(std::stringstream& _stream, const std::string& _boundary);
-
-		static std::string url_decode(const std::string& _src);
-		static std::string url_encode(const std::string& _src);
-
-		static std::string b64_decode(const std::string& _src);
-		static std::string b64_encode(const std::string& _src);
+		void parse_nval(pmap_t& _map, std::stringstream& _stream, char _c = '&', char _e = '=');
+		void parse_mpart(std::stringstream& _stream, std::string _boundary);
 
 		netconn* m_con;
 	};

@@ -22,12 +22,13 @@
 */
 
 
+#include <iostream>
 
 #include "server/jsl-router.h"
 
-// #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-#include <esp_log.h>
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #define ROUTER_LOGTAG "ROUTER :"
+#include <esp_log.h>
 
 
 void jsl_router::addRoute(const char* _method, const char* _pattern, target_t _target)
@@ -41,7 +42,7 @@ void jsl_router::addRoute(const char* _method, const char* _pattern, target_t _t
 	}
 
 	path_t path;
-	jsl_router::splitPath(path,_pattern);
+	jsl_str::splitv(path,_pattern,'/');
 
 	ESP_LOGI(ROUTER_LOGTAG,"Adding route : [%s] => %s",method.c_str(),_pattern);
 	m_routes[method].settle(_target,path);
@@ -65,16 +66,6 @@ jsl_router::target_t jsl_router::dispatch(const std::string& _method, const path
 
 	ESP_LOGE(ROUTER_LOGTAG,"Method Not Supported [%s]",method.c_str());
 	return NULL;
-}
-
-void jsl_router::splitPath(path_t& _path, const std::string& _pattern)
-{
-	std::string line;
-	std::stringstream stream(_pattern);
-	while(std::getline(stream, line, '/'))
-	{
-		if(line != "") _path.push_back(std::move(line));
-	}
 }
 
 void jsl_router::branch::settle(target_t _target, const path_t& _path, u16_t _pos)
@@ -106,19 +97,19 @@ jsl_router::target_t jsl_router::branch::dispatch(pmap_t& _args, const path_t& _
 {
 	if((_path.size() - _pos) < 1) // early out no dive
 	{
-		// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - End of path (%d)",_pos);
+		ESP_LOGD(ROUTER_LOGTAG,"Dispatch - End of path (%d)",_pos);
 		return m_leaf; // return possible match
 	}
 
 	std::string segt = _path[_pos++];
 
-	// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - segment is : %s",segt.c_str());
+	ESP_LOGD(ROUTER_LOGTAG,"Dispatch - segment is : %s",segt.c_str());
 
 	if(m_childs.find(segt) != m_childs.end())
 	{
-		// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Diving branch");
+		ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Diving branch");
 		target_t ret = m_childs[segt].dispatch(_args,_path,_pos);
-		// ESP_LOGV(ROUTER_LOGTAG,"Dispatch - Popping branch");
+		ESP_LOGV(ROUTER_LOGTAG,"Dispatch - Popping branch");
 		if(ret != NULL)
 		{
 			return ret;
@@ -130,11 +121,11 @@ jsl_router::target_t jsl_router::branch::dispatch(pmap_t& _args, const path_t& _
 	{
 		for(auto i = m_regs.begin(); i != m_regs.end(); ++i)
 		{
-			// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Testing regex : %s",i->first.c_str());
+			ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Testing regex : %s",i->first.c_str());
 			std::smatch m;
 			if(std::regex_match(segt,m,i->second.first))
 			{
-				// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Regex MATCH");
+				ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Regex MATCH");
 				_args[i->first] = m[0];
 				target_t ret = i->second.second->dispatch(_args,_path,_pos);
 				if(ret != NULL)
@@ -146,7 +137,7 @@ jsl_router::target_t jsl_router::branch::dispatch(pmap_t& _args, const path_t& _
 		}
 	}
 
-	// ESP_LOGD(ROUTER_LOGTAG,"Dispatch - return possible match");
+	ESP_LOGD(ROUTER_LOGTAG,"Dispatch - return possible match");
 	return m_leaf; // return possible match
 }
 

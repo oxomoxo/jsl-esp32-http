@@ -42,8 +42,6 @@ public:
 	void addRoute(const char* _method, const char* _pattern, target_t _target);
 	target_t dispatch(const std::string& _method, const path_t& _path, pmap_t& _args);
 
-	static void splitPath(path_t& _path, const std::string& _pattern);
-
 protected:
 
 	class branch
