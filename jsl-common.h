@@ -27,9 +27,11 @@
 #define JSL_SERVER_COMMON_H
 
 #include <map>
+#include <ios>
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #ifndef LWIP_HDR_ARCH_H
 #include <stdint.h>
@@ -100,7 +102,7 @@ public:
 	{
 		if(_pmap.find(_name) != _pmap.end())
 		{
-			std::stringstream s(_pmap.at(_name)); s >> _val;
+			std::stringstream s(_pmap.at(_name)); s >> std::boolalpha >> _val;
 			return true;
 		}
 		return false;
@@ -158,13 +160,13 @@ public:
 	{
 	public:
 
-		const std::string& method() const { return m_method; }
-		const std::string& uri() const { return m_uri; }
-		const path_t& path() const { return m_path; }
-		const pmap_t& args() const { return m_args; }
-		const pmap_t& query() const { return m_query; }
-		const pmap_t& form() const { return m_form; }
-		const pmap_t& headers() const { return m_headers; }
+		inline const std::string& method() const { return m_method; }
+		inline const std::string& uri() const { return m_uri; }
+		inline const path_t& path() const { return m_path; }
+		inline const pmap_t& args() const { return m_args; }
+		inline const pmap_t& query() const { return m_query; }
+		inline const pmap_t& form() const { return m_form; }
+		inline const pmap_t& headers() const { return m_headers; }
 		std::string header(const char* _header) const
 		{
 			auto h = m_headers.find(_header);
@@ -191,7 +193,7 @@ public:
 	{
 	public:
 
-		operator std::ostringstream& () { return m_out; }
+		inline operator std::ostringstream& () { return m_out; }
 
 		inline u32_t size()
 		{

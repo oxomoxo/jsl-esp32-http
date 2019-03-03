@@ -63,7 +63,7 @@ protected:
 	public:
 
 		req(netconn& _con) : m_con(&_con) { parse(); }
-		pmap_t& args() { return m_args; } // non const, needed for router dispatch
+		inline pmap_t& args() { return m_args; } // non const, needed for router dispatch
 
 	protected:
 

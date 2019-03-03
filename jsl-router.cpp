@@ -26,7 +26,7 @@
 
 #include "server/jsl-router.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+// #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #define ROUTER_LOGTAG "ROUTER :"
 #include <esp_log.h>
 
