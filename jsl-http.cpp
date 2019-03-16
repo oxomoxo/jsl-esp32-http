@@ -33,7 +33,7 @@
 #include "jsl-http.h"
 
 // #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-#define SERVER_LOGTAG "SERVER :"
+constexpr char SERVER_LOGTAG[] = "SERVER :";
 #include <esp_log.h>
 
 EventGroupHandle_t jsl_http::s_event_group;
@@ -52,7 +52,7 @@ void jsl_http::run(void* _ctx)
 	ESP_LOGI(SERVER_LOGTAG, "Server Task Executing on core %d\n", xPortGetCoreID());
 
 	// This one is necessary if wifi is in station mode
-	if(s_event_group != NULL)
+	if(s_event_group != nullptr)
 	{
 		xEventGroupWaitBits(s_event_group, 0x01, pdFALSE, pdTRUE, portMAX_DELAY );
 	}
@@ -73,7 +73,7 @@ void jsl_http::run(void* _ctx)
 	do
 	{
 		ret = netconn_accept(conn, &newconn);
-		if (ret == ERR_OK && newconn != NULL)
+		if (ret == ERR_OK && newconn != nullptr)
 		{
 			req request(*newconn);
 			res response(*newconn);
@@ -84,7 +84,7 @@ void jsl_http::run(void* _ctx)
 			netconn_delete(newconn);
 		}
 
-		vTaskDelay( (TickType_t)1); /* breathe */
+		vTaskDelay(1 / portTICK_RATE_MS); /* breathe */
 	}
 	while(ret == ERR_OK);
 
@@ -107,7 +107,7 @@ void jsl_http::dispatch(req& _request, res& _response)
 	ESP_LOGI(SERVER_LOGTAG,"[%s] Dispatch URI [%s]",_request.method().c_str(),_request.uri().c_str());
 	jsl_router::target_t target = m_router.dispatch(_request.method(),_request.path(),_request.args());
 
-	if(target == NULL)
+	if(target == nullptr)
 	{
 		ESP_LOGW(SERVER_LOGTAG,"[%s] Target NOT FOUND",_request.method().c_str());
 		_response.write_error(jsl_http_common::STATUS_NOT_FOUND);
@@ -126,7 +126,7 @@ err_t jsl_http::req::parse()
 
 	// Pull request data
 
-	netbuf *inbuf = NULL;
+	netbuf *inbuf = nullptr;
 	ret = netconn_recv(m_con, &inbuf);
 	if (ret != ERR_OK) return ret;
 

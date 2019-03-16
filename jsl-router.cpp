@@ -27,7 +27,7 @@
 #include "server/jsl-router.h"
 
 // #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-#define ROUTER_LOGTAG "ROUTER :"
+constexpr char ROUTER_LOGTAG[] = "ROUTER :";
 #include <esp_log.h>
 
 
@@ -65,7 +65,7 @@ jsl_router::target_t jsl_router::dispatch(const std::string& _method, const path
 	}
 
 	ESP_LOGE(ROUTER_LOGTAG,"Method Not Supported [%s]",method.c_str());
-	return NULL;
+	return nullptr;
 }
 
 void jsl_router::branch::settle(target_t _target, const path_t& _path, u16_t _pos)
@@ -110,7 +110,7 @@ jsl_router::target_t jsl_router::branch::dispatch(pmap_t& _args, const path_t& _
 		ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Diving branch");
 		target_t ret = m_childs[segt].dispatch(_args,_path,_pos);
 		ESP_LOGV(ROUTER_LOGTAG,"Dispatch - Popping branch");
-		if(ret != NULL)
+		if(ret != nullptr)
 		{
 			return ret;
 		}
@@ -128,7 +128,7 @@ jsl_router::target_t jsl_router::branch::dispatch(pmap_t& _args, const path_t& _
 				ESP_LOGD(ROUTER_LOGTAG,"Dispatch - Regex MATCH");
 				_args[i->first] = m[0];
 				target_t ret = i->second.second->dispatch(_args,_path,_pos);
-				if(ret != NULL)
+				if(ret != nullptr)
 				{
 					return ret;
 				}

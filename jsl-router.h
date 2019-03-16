@@ -48,7 +48,7 @@ protected:
 	{
 	public:
 
-		branch(branch* _parent = NULL) : m_parent(_parent), m_leaf(NULL) {}
+		branch(branch* _parent = nullptr) : m_parent(_parent), m_leaf(nullptr) {}
 
 		void settle(target_t _target, const path_t& _path, u16_t _pos = 0);
 		target_t dispatch(pmap_t& _args, const path_t& _path, u16_t _pos = 0);

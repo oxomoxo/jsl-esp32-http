@@ -49,7 +49,7 @@ public:
 	using target_t = jsl_http_common::target_t;
 	using status_t = jsl_http_common::status_t;
 
-	static esp_err_t start(const EventGroupHandle_t _evgr = NULL);
+	static esp_err_t start(const EventGroupHandle_t _evgr = nullptr);
 	static void run(void* _ctx);
 	static esp_err_t stop();
 
