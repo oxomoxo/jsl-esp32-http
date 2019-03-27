@@ -62,7 +62,7 @@ protected:
 	{
 	public:
 
-		req(netconn& _con) : m_con(&_con) { parse(); }
+		req(netconn& _con) : m_conn(&_con) { parse(); }
 		inline pmap_t& args() { return m_args; } // non const, needed for router dispatch
 
 	protected:
@@ -74,7 +74,7 @@ protected:
 		void parse_nval(pmap_t& _map, std::stringstream& _stream, char _c = '&', char _e = '=');
 		void parse_mpart(std::stringstream& _stream, std::string _boundary);
 
-		netconn* m_con;
+		netconn* m_conn;
 	};
 
 	class res :
@@ -82,14 +82,14 @@ protected:
 	{
 	public:
 
-		res(netconn& _con) : m_con(&_con) {}
+		res(netconn& _con) : m_conn(&_con) {}
 		virtual void write(status_t _status);
 
 	protected:
 
 		std::string headers();
 
-		netconn* m_con;
+		netconn* m_conn;
 	};
 
 	static void dispatch(req& _request, res& _response);

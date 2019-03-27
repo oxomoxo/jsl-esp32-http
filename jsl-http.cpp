@@ -22,19 +22,15 @@
 */
 
 
-
 #include <iostream>
 
-#include <esp_wifi.h>
+#define LOG_LOCAL_LEVEL ESP_LOG_NONE
+// #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+constexpr char SERVER_LOGTAG[] = "HTTP :";
 #include <esp_log.h>
 
 #include "utils/jsl-str.h"
-
 #include "jsl-http.h"
-
-// #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
-constexpr char SERVER_LOGTAG[] = "SERVER :";
-#include <esp_log.h>
 
 EventGroupHandle_t jsl_http::s_event_group;
 jsl_router jsl_http::m_router;
@@ -127,7 +123,7 @@ err_t jsl_http::req::parse()
 	// Pull request data
 
 	netbuf *inbuf = nullptr;
-	ret = netconn_recv(m_con, &inbuf);
+	ret = netconn_recv(m_conn, &inbuf);
 	if (ret != ERR_OK) return ret;
 
 	std::stringstream stream;
@@ -380,6 +376,6 @@ void jsl_http::res::write(status_t _status)
 	headr.seekp(0, std::ios::end);
 	u32_t hlength = headr.tellp();
 	// Flush to netconn
-	netconn_write(m_con, headr.str().c_str(), hlength, NETCONN_COPY );
-	netconn_write(m_con, m_out.str().c_str(), clength, NETCONN_COPY );
+	netconn_write(m_conn, headr.str().c_str(), hlength, NETCONN_COPY );
+	netconn_write(m_conn, m_out.str().c_str(), clength, NETCONN_COPY );
 }

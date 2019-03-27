@@ -24,11 +24,12 @@
 
 #include <iostream>
 
-#include "server/jsl-router.h"
-
+#define LOG_LOCAL_LEVEL ESP_LOG_NONE
 // #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 constexpr char ROUTER_LOGTAG[] = "ROUTER :";
 #include <esp_log.h>
+
+#include "server/jsl-router.h"
 
 
 void jsl_router::addRoute(const char* _method, const char* _pattern, target_t _target)
