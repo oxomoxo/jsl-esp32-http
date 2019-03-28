@@ -80,7 +80,7 @@ void jsl_http::run(void* _ctx)
 			netconn_delete(newconn);
 		}
 
-		vTaskDelay(1 / portTICK_RATE_MS); /* breathe */
+		vTaskDelay(pdMS_TO_TICKS(1)); /* breathe */
 	}
 	while(ret == ERR_OK);
 
